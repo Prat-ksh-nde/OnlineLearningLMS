@@ -1,0 +1,163 @@
+# GitLab CI/CD Pipeline for Online Learning Management System
+# Three-stage pipeline: Build → Test → Release Preparation
+
+stages:
+  - build
+  - test
+  - release
+
+# Define the base Docker image for the pipeline
+image: gradle:8.5-jdk21
+
+# Define variables
+variables:
+  GRADLE_OPTS: "-Dorg.gradle.daemon=false"
+  GRADLE_CACHE_DIR: "$CI_PROJECT_DIR/.gradle"
+
+# Cache Gradle dependencies to speed up builds
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - .gradle/wrapper
+    - .gradle/caches
+
+# ============================================================================
+# STAGE 1: BUILD
+# Compile Java source code and generate the application JAR
+# ============================================================================
+build:
+  stage: build
+  script:
+    - echo "========== BUILD STAGE START =========="
+    - echo "Building Online Learning Management System..."
+    - chmod +x gradlew
+    - ./gradlew clean build -x test
+    - echo "Build completed successfully!"
+    - echo "========== BUILD STAGE END =========="
+  artifacts:
+    paths:
+      - build/libs/
+      - build/classes/
+      - build/resources/
+    expire_in: 1 day
+    name: "build-artifacts-${CI_COMMIT_SHORT_SHA}"
+  success:
+    - "build/libs/*.jar"
+  only:
+    - merge_requests
+    - main
+    - develop
+    - branches
+  retry:
+    max: 2
+    when:
+      - runner_system_failure
+      - stuck_or_timeout_failure
+
+# ============================================================================
+# STAGE 2: TEST
+# Run JUnit unit tests and integration tests
+# Pipeline FAILS if any test fails - prevents progression to Release stage
+# ============================================================================
+test:
+  stage: test
+  script:
+    - echo "========== TEST STAGE START =========="
+    - echo "Running JUnit tests for Online Learning Management System..."
+    - chmod +x gradlew
+    - ./gradlew test --info
+    - echo "All tests passed successfully!"
+    - echo "========== TEST STAGE END =========="
+  artifacts:
+    paths:
+      - build/test-results/
+      - build/reports/tests/
+    reports:
+      junit: build/test-results/test/TEST-*.xml
+    expire_in: 30 days
+    name: "test-results-${CI_COMMIT_SHORT_SHA}"
+  dependencies:
+    - build
+  only:
+    - merge_requests
+    - main
+    - develop
+    - branches
+  retry:
+    max: 1
+    when:
+      - runner_system_failure
+  # This job will fail the pipeline if tests fail
+  allow_failure: false
+
+# ============================================================================
+# STAGE 3: RELEASE PREPARATION
+# Only runs if Build and Test stages succeed
+# Prepares the successfully built and tested artifact for release
+# ============================================================================
+release:
+  stage: release
+  script:
+    - echo "========== RELEASE PREPARATION STAGE START =========="
+    - echo "Preparing artifact for release..."
+    - chmod +x gradlew
+    - ./gradlew build
+    - echo "Creating release artifacts..."
+    - |
+      if [ -f "build/libs/OnlineLearningLMS-*.jar" ]; then
+        echo "Release artifact created successfully!"
+        ls -lh build/libs/OnlineLearningLMS-*.jar
+      else
+        echo "Error: JAR file not found in build/libs/"
+        exit 1
+      fi
+    - echo "========== RELEASE PREPARATION STAGE END =========="
+  artifacts:
+    paths:
+      - build/libs/OnlineLearningLMS-*.jar
+    expire_in: 90 days
+    name: "release-${CI_COMMIT_TAG}"
+  dependencies:
+    - build
+    - test
+  only:
+    - main
+    - tags
+  when: on_success
+  allow_failure: false
+
+# ============================================================================
+# Optional: Code Quality and Coverage Analysis (can be added later)
+# ============================================================================
+# code_quality:
+#   stage: test
+#   script:
+#     - ./gradlew jacocoTestReport
+#   coverage: '/Total.*?([0-9]{1,3})%/'
+#   artifacts:
+#     paths:
+#       - build/reports/jacoco/
+#     expire_in: 30 days
+#   dependencies:
+#     - build
+
+# ============================================================================
+# Success and Failure Notifications
+# ============================================================================
+success:
+  stage: .post
+  script:
+    - echo "CI/CD Pipeline completed successfully!"
+  when: on_success
+  only:
+    - main
+    - develop
+
+failure:
+  stage: .post
+  script:
+    - echo "CI/CD Pipeline failed. Please check the logs above."
+  when: on_failure
+  only:
+    - main
+    - develop

@@ -1,0 +1,69 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+group = 'com.lms'
+version = '1.0.0'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+    options.release = 21
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // JUnit 5 (Jupiter)
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.1'
+    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.10.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.1'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+    testLogging {
+        events "passed", "skipped", "failed"
+        exceptionFormat "full"
+        showStandardStreams false
+    }
+}
+
+application {
+    mainClass = 'com.lms.LMSApplication'
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'com.lms.LMSApplication'
+        attributes 'Implementation-Title': 'Online Learning Management System'
+        attributes 'Implementation-Version': version
+    }
+}
+
+tasks.register('testReport') {
+    group = 'verification'
+    description = 'Display test report'
+    doLast {
+        println "\n========== TEST REPORT =========="
+        println "Test results can be found in: build/test-results/test/"
+        println "================================\n"
+    }
+}
+
+test.finalizedBy testReport
+
+// Ensure wrapper is used
+wrapper {
+    gradleVersion = '8.5'
+}

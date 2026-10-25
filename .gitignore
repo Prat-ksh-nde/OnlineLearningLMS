@@ -1,0 +1,136 @@
+# Gradle Build Directory
+build/
+.gradle/
+gradle-app.setting
+!gradle-wrapper.jar
+!gradle-wrapper.properties
+
+# IDE - IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+*.classpath
+*.project
+*.c9/
+*.launch
+.settings/
+
+# IDE - VSCode
+.vscode/
+*.code-workspace
+
+# IDE - Eclipse
+bin/
+.classpath
+.project
+.settings/
+
+# IDE - NetBeans
+nbproject/
+nb-configuration.xml
+
+# Compiled Output
+*.class
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+*.exe
+*.app
+
+# Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+
+# Gradle
+.gradle
+build
+gradlew
+!gradlew
+!gradlew.bat
+
+# Operating System
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+Thumbs.db
+._.DS_Store
+
+# Environment Variables
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+logs/
+test-results/
+
+# Runtime Data
+*.pid
+*.seed
+*.pid.lock
+*.jfm
+
+# JetBrains IDE specific files
+*.idea
+*.iml
+.idea/
+out/
+
+# Git
+.git/
+.gitattributes
+
+# Temporary files
+*.tmp
+*.bak
+*~
+.#*
+
+# CI/CD specific
+.gitlab-runner/
+artifacts/
+
+# Distribution
+dist/
+*.tar
+*.tar.gz
+*.rar
+*.7z
+
+# npm (if used)
+node_modules/
+package-lock.json
+yarn.lock
+
+# Documentation generated
+site/
+docs/_build/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+
+# Test Coverage
+.coverage
+.coverage.*
+htmlcov/
+
+# Gradle Wrapper (only ignore the JAR, keep the scripts and properties)
+gradle/wrapper/gradle-wrapper.jar
